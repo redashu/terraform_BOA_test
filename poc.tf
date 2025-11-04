@@ -8,6 +8,7 @@ terraform {
   required_version = ">= 1.0"
 }
 
+# terraform provider section 
 provider "aws" {
   # Configure provider via environment variables or override via variables below
   # Recommended: set AWS_REGION and AWS_PROFILE or AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY

@@ -15,7 +15,7 @@ pipeline {
             when { branch 'dev' }
             steps {
                 echo "hello world new"
-                git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'master'
+               // git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'master'
                 sh 'ls -a'
             }
         }
@@ -23,7 +23,7 @@ pipeline {
             when { branch 'dev' }
             steps {
                 echo "hello world new"
-             git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'dev'
+            // git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'dev'
                 sh 'terraform init'
                 sh 'terraform plan'
             }

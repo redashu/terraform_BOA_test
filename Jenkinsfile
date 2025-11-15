@@ -11,12 +11,21 @@ pipeline {
                 sh 'ls -a'
             }
         }
-        stage('terraform test'){
+        stage('branch test'){
             when { branch 'dev' }
             steps {
                 echo "hello world new"
                 git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'master'
                 sh 'ls -a'
+            }
+        }
+        stage('terraform test'){
+            when { branch 'dev' }
+            steps {
+                echo "hello world new"
+             git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'dev'
+                sh 'terraform init'
+                sh 'terraform plan'
             }
         }
     }

@@ -20,7 +20,9 @@ pipeline {
             }
         }
         stage('terraform test'){
-            when { branch 'dev' }
+            when {
+                 expression { env.BRANCH_NAME == 'dev' || env.GIT_BRANCH == 'origin/dev' }
+            }   
             steps {
                 echo "hello world new data"
             // git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'dev'

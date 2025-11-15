@@ -22,6 +22,10 @@ variable "aws_region" {
   description = "AWS region to use. Can be overridden with TF_VAR_aws_region or in a tfvars file."
 }
 
+variable "msg" {
+  type    = string
+ 
+}
 
 
 # A null_resource that runs a local-exec provisioner to print "Hello World"
@@ -48,6 +52,11 @@ output "hello_resource_id" {
 output "aws_region" {
   value       = data.aws_region.current.name
   description = "AWS based region retrieved by the provider (optional)."
+}
+
+output "printing env" {
+  value       = var.msg
+  description = "Message from the environment-specific variable."
 }
 
 

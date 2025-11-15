@@ -1,58 +1,107 @@
 pipeline {
     agent any
+
     triggers {
         githubPush()
     }
 
     stages {
 
-        stage('Hello') {
+        /* ------------------------------------------------------
+           1) Checkout code
+        ------------------------------------------------------- */
+        stage('Checkout') {
             steps {
-                echo 'Hello World'
-                sh 'ls -a'
+                checkout scm
+                echo "Branch: ${env.BRANCH_NAME}"
+                sh 'ls -al'
             }
         }
 
-        stage('branch test') {
-            when { branch 'dev' }
-            steps {
-                echo "hello world new"
-                sh 'ls -a'
-            }
-        }
-
-        stage('terraform plan') {
-            when {
-                expression { env.BRANCH_NAME == 'dev' || env.GIT_BRANCH == 'origin/dev' }
-            }
-            steps {
-                echo "Running Terraform PLAN on dev"
-                sh 'terraform init'
-                sh 'terraform plan -out=tfplan'
-            }
-        }
-
-        stage('manual approval before apply') {
-            when {
-                expression { env.BRANCH_NAME == 'dev' || env.GIT_BRANCH == 'origin/dev' }
-            }
+        /* ------------------------------------------------------
+           2) Select/Create Terraform Workspace based on branch
+        ------------------------------------------------------- */
+        stage('Select Terraform Workspace') {
             steps {
                 script {
-                    timeout(time: 10, unit: 'MINUTES') {
-                        input message: "Approve Terraform APPLY for DEV environment?"
+                    env.TF_WS = env.BRANCH_NAME   // workspace = branch name
+                    sh """
+                        terraform workspace new ${TF_WS} 2>/dev/null || terraform workspace select ${TF_WS}
+                    """
+                }
+            }
+        }
+
+        /* ------------------------------------------------------
+           3) Terraform Init
+        ------------------------------------------------------- */
+        stage('Terraform Init') {
+            steps {
+                sh "terraform init"
+            }
+        }
+
+        /* ------------------------------------------------------
+           4) Select tfvars file based on branch
+        ------------------------------------------------------- */
+        stage('Select tfvars file') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'dev') {
+                        env.TFVARS = "dev.tfvars"
+                    } else if (env.BRANCH_NAME == 'stage') {
+                        env.TFVARS = "stage.tfvars"
+                    } else if (env.BRANCH_NAME == 'main') {
+                        env.TFVARS = "prod.tfvars"
+                    } else {
+                        error("No tfvars file defined for branch: ${env.BRANCH_NAME}")
+                    }
+
+                    echo "Using tfvars file: ${env.TFVARS}"
+                }
+            }
+        }
+
+        /* ------------------------------------------------------
+           5) Terraform Plan (always runs)
+        ------------------------------------------------------- */
+        stage('Terraform Plan') {
+            steps {
+                sh """
+                    terraform plan -var-file=${TFVARS} -out=tfplan
+                """
+            }
+        }
+
+        /* ------------------------------------------------------
+           6) Manual Approval (required before apply, for ALL envs)
+        ------------------------------------------------------- */
+        stage('Manual Approval Before Apply') {
+            steps {
+                script {
+                    timeout(time: 20, unit: 'MINUTES') {
+                        input message: "Approve Terraform APPLY for workspace: ${env.TF_WS} using ${env.TFVARS} ?"
                     }
                 }
             }
         }
 
-        stage('terraform apply') {
-            when {
-                expression { env.BRANCH_NAME == 'dev' || env.GIT_BRANCH == 'origin/dev' }
-            }
+        /* ------------------------------------------------------
+           7) Terraform Apply (after approval)
+        ------------------------------------------------------- */
+        stage('Terraform Apply') {
             steps {
-                echo "Applying Terraform changes on dev"
-                sh 'terraform apply -auto-approve tfplan'
+                sh """
+                    terraform apply -var-file=${TFVARS} -auto-approve tfplan
+                """
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Cleaning workspace..."
+            cleanWs()
         }
     }
 }

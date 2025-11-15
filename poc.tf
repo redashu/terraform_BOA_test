@@ -32,7 +32,7 @@ resource "null_resource" "hello" {
   }
 
   provisioner "local-exec" {
-    command = "echo 'Hello, World from DeV branch Terraform null_resource!'"
+    command = "echo 'Hello, World from DeV branch TerraforM null_resource!'"
   }
 }
 

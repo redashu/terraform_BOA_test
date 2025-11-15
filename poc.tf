@@ -47,7 +47,7 @@ output "hello_resource_id" {
 
 output "aws_region" {
   value       = data.aws_region.current.name
-  description = "AWS region retrieved by the provider (optional)."
+  description = "AWS based region retrieved by the provider (optional)."
 }
 
 

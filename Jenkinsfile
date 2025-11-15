@@ -1,35 +1,58 @@
 pipeline {
     agent any
     triggers {
-        githubPush()    // 🔥 Trigger Jenkins on every push to repo
+        githubPush()
     }
 
     stages {
+
         stage('Hello') {
             steps {
                 echo 'Hello World'
                 sh 'ls -a'
             }
         }
-        stage('branch test'){
+
+        stage('branch test') {
             when { branch 'dev' }
             steps {
                 echo "hello world new"
-               // git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'master'
                 sh 'ls -a'
             }
         }
-        stage('terraform test'){
+
+        stage('terraform plan') {
             when {
-                 expression { env.BRANCH_NAME == 'dev' || env.GIT_BRANCH == 'origin/dev' }
-            }   
+                expression { env.BRANCH_NAME == 'dev' || env.GIT_BRANCH == 'origin/dev' }
+            }
             steps {
-                echo "hello world new data"
-            // git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'dev'
+                echo "Running Terraform PLAN on dev"
                 sh 'terraform init'
-                sh 'terraform plan'
+                sh 'terraform plan -out=tfplan'
+            }
+        }
+
+        stage('manual approval before apply') {
+            when {
+                expression { env.BRANCH_NAME == 'dev' || env.GIT_BRANCH == 'origin/dev' }
+            }
+            steps {
+                script {
+                    timeout(time: 10, unit: 'MINUTES') {
+                        input message: "Approve Terraform APPLY for DEV environment?"
+                    }
+                }
+            }
+        }
+
+        stage('terraform apply') {
+            when {
+                expression { env.BRANCH_NAME == 'dev' || env.GIT_BRANCH == 'origin/dev' }
+            }
+            steps {
+                echo "Applying Terraform changes on dev"
+                sh 'terraform apply -auto-approve tfplan'
             }
         }
     }
 }
-

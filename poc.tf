@@ -54,7 +54,7 @@ output "aws_region" {
   description = "AWS based region retrieved by the provider (optional)."
 }
 
-output "printing env" {
+output "printing_env" {
   value       = var.msg
   description = "Message from the environment-specific variable."
 }

@@ -70,7 +70,7 @@ pipeline {
                         case "stage":
                             env.TFVARS = "stage.tfvars"
                             break
-                        case "main":
+                        case "master":
                             env.TFVARS = "prod.tfvars"
                             break
                         default:

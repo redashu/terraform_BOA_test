@@ -22,7 +22,7 @@ pipeline {
         stage('terraform test'){
             when { branch 'dev' }
             steps {
-                echo "hello world new"
+                echo "hello world new data"
             // git url: 'https://github.com/redashu/terraform_BOA_test.git', branch: 'dev'
                 sh 'terraform init'
                 sh 'terraform plan'

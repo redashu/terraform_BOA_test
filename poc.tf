@@ -56,7 +56,7 @@ output "aws_region" {
 
 output "printing_env" {
   value       = var.msg
-  description = "Message from Thee environment-specific variable."
+  description = "Messages from Thee environment-specific variable."
 }
 
 
